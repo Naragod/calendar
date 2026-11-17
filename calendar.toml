@@ -1,0 +1,118 @@
+# Every setting, with its default.
+#
+# Lengths are in points: 72 pt = 1 inch. The poster is 60 x 40 in.
+# To try a change, copy the lines you want into your own file and run:
+#   yearly_calendar 2027 --config my_settings.toml
+# Or change one value:
+#   yearly_calendar 2027 --set grid.cell_width=180
+
+[page]
+width = 4320            # 60 in. Or "auto" to fit the calendar plus the margin
+height = 2880           # 40 in
+margin = 48             # white space around the frame when the size is "auto"
+background = "#ffffff"
+
+[output]
+directory = "output"            # inside the project folder
+name = "{year}_Yearly_Calendar"
+formats = ["png", "pdf", "svg"]
+dpi = 300                       # dots per inch in the PNG
+
+[grid]
+columns = 21
+cell_width = 197.4
+cell_height = 152.2
+staircase = "even"      # empty boxes per row at the top left: "even" (3-2-1, room for the white tiles),
+                        # "tight" (5-4-3-1) or your own list, like [5, 4, 3, 1]
+
+[lines]
+color = "#000000"
+cell_border = 9.0               # the line between two boxes
+frame = 22.5                    # the thick outer frame
+month_divider = 15.0            # the line where one month meets the next
+month_divider_style = "fade"    # "fade" (solid at the corner, then fading) or "solid"
+
+[colors]
+by = "week"             # which boxes share a colour: "day", "week" or "month"
+space = "oklab"         # how to mix colours: "oklab" (even, soft), "srgb" or "oklch"
+even_pace = true        # true: the colour shifts at a steady pace. false: each stop sits on its date
+palette = []            # exact colours, one per day, week or month. These replace the stops
+
+# Colour stops: a colour at a date ("MM-DD"), or at a point in the year (0 = 1 Jan, 1 = 31 Dec).
+[[colors.stops]]
+at = "01-01"
+color = "#96b6ff"   # blue
+
+[[colors.stops]]
+at = "01-29"
+color = "#80c0ff"   # sky blue
+
+[[colors.stops]]
+at = "04-23"
+color = "#99ff99"   # green
+
+[[colors.stops]]
+at = "07-23"
+color = "#ffd380"   # apricot
+
+[[colors.stops]]
+at = "10-22"
+color = "#d999ff"   # lilac
+
+[[colors.stops]]
+at = "12-24"
+color = "#9eb3ff"   # periwinkle
+
+[highlight]
+days = "month_end"      # boxes with a dark corner: "month_end", "month_start" or "none"
+darkness = 0.33         # 0 = no change, 1 = black. 0.33 keeps black text easy to read
+hue_shift = 35          # how far, in degrees, the dark corner's colour turns
+dark_colors = []        # 12 exact corner colours, one per month. These replace the two above
+text_color = "labels"   # text on dark corners: "labels" (same as labels.color), "auto" or a colour
+
+[labels]
+week_numbering = "blocks"   # "blocks": week 1 = 1-7 Jan. "iso": weeks run Monday to Sunday
+centre = "day_of_year"      # day_of_year, day_of_month, week, month, week_month or none
+top_left = "day_of_month"
+top_right = "week_month"
+january_day_of_month = false    # in January the day of month equals the day of year
+centre_size = 28.56             # height of the big number
+corner_size = 15.7              # height of the corner labels
+corner_top = 13.5               # gap from the box edge to the labels.
+corner_left = 13.5              # 13.5 leaves 9 pt clear of the border
+corner_right = 13.5
+color = "#000000"
+
+[weekends]
+bold = true             # Saturday and Sunday numbers in bold
+
+[holidays]               # from the `holidays` package, about 200 countries
+country = "CA"          # country code; "" turns holidays off
+subdivision = "ON"      # state, province or region; "" for the whole country
+observed = false        # true: when a holiday falls on a weekend, also mark the weekday off
+names = { "Thanksgiving Day" = "Thanksgiving" }   # shorter names that fit on one line
+label = "Ontario public holiday"    # the holiday line in the white tiles
+color = "#b32322"       # red. Keeps 3:1 contrast on every box and against the lines
+
+[my_dates]
+color = "#0e2987"       # navy
+dates = []              # like [{ date = "07-12", text = "Mum" },
+                        #       { date = "2027-08-02", until = "2027-08-09", text = "Japan" }]
+                        # "MM-DD" repeats each year. "YYYY-MM-DD" marks one year
+
+# The white tiles at the start of the first row, in reading order.
+[overview]
+show = true             # "Day of year on the 1st": the day number of each month's 1st
+
+[legend]
+show = true             # the parts of a box, in words
+
+[key]
+show = true             # a sample of each mark, beside 1 January
+
+[title]
+text = "{year}"         # digits, commas and spaces; "" turns the title off
+size = 105.7            # height of the digits
+x = -22.5               # left edge, from the left edge of the grid
+baseline = 196.5        # bottom edge, from the top edge of the grid
+color = "#000000"

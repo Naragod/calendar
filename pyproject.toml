@@ -1,0 +1,26 @@
+[project]
+name = "yearly_calendar"
+version = "1.0.0"
+description = "Generates the yearly calendar poster for any year."
+readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE", "assets/Inter-OFL.txt"]
+authors = [{ name = "Mateo Naranjo Barandica" }]
+requires-python = ">=3.11"
+dependencies = ["cairosvg>=2.7", "holidays>=0.60"]
+
+[project.urls]
+Repository = "https://github.com/Naragod/calendar"
+
+[project.optional-dependencies]
+dev = ["pytest>=8", "pyflakes>=3", "shapely>=2", "fonttools>=4"]
+
+[project.scripts]
+yearly_calendar = "yearly_calendar.cli:main"
+
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src"]

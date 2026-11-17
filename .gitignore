@@ -1,0 +1,21 @@
+# Python
+.venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+.pytest_cache/
+
+# Generated posters: rebuild with `yearly_calendar YEAR`
+output/
+
+# Kept local: the Canva template exports and the first patched draft
+source/
+drafts/
+
+# Editors and OS
+.DS_Store
+.idea/
+.vscode/
+.claude/settings.local.json

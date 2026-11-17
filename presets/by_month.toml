@@ -1,0 +1,4 @@
+# One colour per month, so colours change at the month borders.
+[colors]
+by = "month"
+space = "oklab"

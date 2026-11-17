@@ -1,0 +1,18 @@
+# The 2026 poster's hand-picked colours: one per week, and one dark corner per month.
+[colors]
+by = "week"
+palette = [
+  "#96b6ff", "#8fbaff", "#87bdff", "#84bfff", "#80c0ff", "#82c5f7", "#84cbef", "#86d0e6",
+  "#88d5dd", "#8adad5", "#8ce0cc", "#8fe5c4", "#91eabb", "#93efb3", "#95f5aa", "#97faa2",
+  "#99ff99", "#9efd98", "#a2fb97", "#aaf895", "#b3f493", "#bbf091", "#c4ed8f", "#cce98d",
+  "#d5e58a", "#dde288", "#e6de86", "#eeda84", "#f7d782", "#ffd380", "#fed082", "#fcce8b",
+  "#f9c995", "#f6c5a0", "#f2c0aa", "#efbbb5", "#ecb6c0", "#e9b1ca", "#e6acd5", "#e3a8df",
+  "#dfa3ea", "#dc9ef4", "#d999ff", "#d69bff", "#d29cff", "#caa0ff", "#c3a3ff", "#bba6ff",
+  "#b4a9ff", "#acadff", "#a5b0ff", "#9eb3ff", "#9eb3ff",
+]
+
+[highlight]
+dark_colors = [
+  "#564789", "#1a3344", "#00696b", "#006d59", "#006d4e", "#2c723c",
+  "#4d6620", "#7b4853", "#4e4479", "#592d69", "#8d1759", "#564789",
+]

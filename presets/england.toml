@@ -1,0 +1,7 @@
+# England's bank holidays in place of Ontario's. Short names fit on one line.
+[holidays]
+country = "GB"
+subdivision = "ENG"
+observed = true          # a holiday on a weekend also marks the next weekday off
+label = "England bank holiday"
+names = { "Spring Bank Holiday" = "Bank holiday", "Late Summer Bank Holiday" = "Bank holiday", "New Year’s Day (observed)" = "Substitute day", "Christmas Day (observed)" = "Substitute day", "Boxing Day (observed)" = "Substitute day" }

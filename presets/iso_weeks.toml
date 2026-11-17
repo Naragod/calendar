@@ -1,0 +1,3 @@
+# Weeks run Monday to Sunday (ISO 8601). On the 2027 poster, 1-3 January show week 53.
+[labels]
+week_numbering = "iso"

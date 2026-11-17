@@ -1,0 +1,13 @@
+# Square boxes and thinner lines, on a page sized to fit.
+[page]
+width = "auto"
+height = "auto"
+
+[grid]
+cell_width = 180
+cell_height = 180
+
+[lines]
+cell_border = 6
+frame = 18
+month_divider = 12
