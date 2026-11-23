@@ -107,7 +107,7 @@ def key_tile(rect, ctx):
         rows.append([(weekend, 'bold', cfg.color), ('Saturday, Sunday', 'text', cfg.color)])
     marks = [(label, 'text', settings.holidays.color) for label in ctx.holiday_labels]
     if settings.my_dates.dates:
-        marks.append(('Your dates', 'text', settings.my_dates.color))
+        marks.append((settings.my_dates.label, 'text', settings.my_dates.color))
     if marks:
         rows.append(marks)
     if KEY_HIGHLIGHT[settings.highlight.days]:

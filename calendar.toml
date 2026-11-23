@@ -81,6 +81,7 @@ corner_size = 15.7              # height of the corner labels
 corner_top = 13.5               # gap from the box edge to the labels.
 corner_left = 13.5              # 13.5 leaves 9 pt clear of the border
 corner_right = 13.5
+name_align = "left"             # holiday and your-date names: "left" or "centre"
 color = "#000000"
 
 [weekends]
@@ -96,6 +97,7 @@ color = "#b32322"       # red. Keeps 3:1 contrast on every box and against the l
 
 [my_dates]
 color = "#0e2987"       # navy
+label = "Your dates"    # their line in the white tiles
 dates = []              # like [{ date = "07-12", text = "Mum" },
                         #       { date = "2027-08-02", until = "2027-08-09", text = "Japan" }]
                         # "MM-DD" repeats each year. "YYYY-MM-DD" marks one year
@@ -116,3 +118,9 @@ size = 105.7            # height of the digits
 x = -22.5               # left edge, from the left edge of the grid
 baseline = 196.5        # bottom edge, from the top edge of the grid
 color = "#000000"
+
+[logo]                  # a picture beside the title
+file = ""               # an SVG file with a viewBox, from the project folder. "" leaves the logo off
+height = 28             # height in points. The width keeps the picture's shape.
+gap = 24                # space between the title and the logo
+position = "beside"     # "beside": right of the title, tops in line. "above": over the title, centred

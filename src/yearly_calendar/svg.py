@@ -22,6 +22,7 @@ def to_svg(scene, font):
         _lines(scene.grid_lines, scene.cell_border, scene.line_color),     # cell borders stay unbroken
         f'<path d="{_poly(scene.frame_outer)} {_poly(scene.frame_inner)}" fill="{scene.line_color}" fill-rule="evenodd"/>',
         *(_text(text) for text in texts),
+        *([_logo(scene.logo)] if scene.logo else []),
     ]
     w, h = _num(scene.width), _num(scene.height)
     return (f'<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" '
@@ -94,3 +95,9 @@ def _text(text):
     uses = ''.join(f'<use xlink:href="#{_glyph_id(g.style, g.char)}" '
                    f'transform="translate({_num(g.x)} {_num(g.y)}) scale({_num(g.scale)})"/>' for g in text.glyphs)
     return f'<g fill="{text.color}">{uses}</g>'
+
+
+def _logo(logo):
+    r, box = logo.rect, ' '.join(_num(v) for v in logo.view_box)
+    return (f'<svg x="{_num(r.x)}" y="{_num(r.y)}" width="{_num(r.w)}" height="{_num(r.h)}" '
+            f'viewBox="{box}">{logo.inner}</svg>')

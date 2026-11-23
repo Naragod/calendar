@@ -1,10 +1,11 @@
-"""Assemble a year's scene: grid, day cells, legend tiles, month borders, frame and title."""
+"""Assemble a year's scene: grid, day cells, legend tiles, month borders, frame, title and logo."""
 from dataclasses import replace
 
 from . import colors
 from .dates import year_days
 from .layout import build_grid, grid_lines, offset_outline, outline
 from .legend import TILE_CELLS, legend_tiles, make_legend
+from .logo import by_title
 from .model import Scene, day_colors, day_marks, make_cell, make_title, month_dividers, page_size
 
 
@@ -29,4 +30,5 @@ def build_scene(year, settings, font):
         month_divider=lines.month_divider,
         dividers=tuple(month_dividers(days, slots, grid, lines.month_divider_style == 'fade')),
         frame_outer=tuple(offset_outline(inner, lines.frame)), frame_inner=tuple(inner),
-        patches=outlines, title=make_title(year, grid, settings.title, font))
+        patches=outlines, title=make_title(year, grid, settings.title, font),
+        logo=by_title(year, grid, settings, font))

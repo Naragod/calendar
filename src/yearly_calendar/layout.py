@@ -171,6 +171,17 @@ def offset_outline(pts, d):
     return out
 
 
+def clear_of_grid(rect, grid, space):
+    """True when `rect` keeps `space` pt clear of every row of cells. With space = the frame
+    width, the grown rows cover the same ground as the frame's outer outline."""
+    for r in range(grid.rows):
+        x0, y0 = grid.col_x(grid.row_starts[r]) - space, grid.row_y(r) - space
+        x1, y1 = grid.col_x(grid.columns) + space, grid.row_y(r + 1) + space
+        if rect.x < x1 and x0 < rect.x + rect.w and rect.y < y1 and y0 < rect.y + rect.h:
+            return False
+    return True
+
+
 def grid_lines(grid):
     """Every cell edge, merged into the fewest straight segments. Each legend tile's cells merge."""
     starts, rows, right = grid.row_starts, grid.rows, grid.col_x(grid.columns)

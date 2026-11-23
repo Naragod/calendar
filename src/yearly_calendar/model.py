@@ -7,6 +7,7 @@ from . import colors
 from .font import CAP, Placed
 from .marks import my_dates, public_holidays
 from .layout import Rect, Segment, month_border
+from .logo import Logo
 
 # Setting values and what they do. config.validate accepts exactly these keys.
 COLOR_UNITS = {
@@ -28,6 +29,7 @@ LABELS = {                       # kind: (text for a day, words for the legend)
     'none': (lambda day: '', ''),
 }
 DIVIDER_STYLES = ('fade', 'solid')
+NAME_ALIGNS = ('left', 'centre')
 
 
 @dataclass(frozen=True)
@@ -74,6 +76,7 @@ class Scene:
     frame_inner: tuple[tuple[float, float], ...]
     patches: tuple[Patch, ...]           # the key sample's outline
     title: Text | None
+    logo: Logo | None = None
 
 
 class Label(NamedTuple):
@@ -151,18 +154,19 @@ def day_marks(year, settings):
 
 
 def mark_names(marks, rect, highlight, settings, font):
-    """Holiday and your-date names in the bottom-left slot, at the label size. A second name
-    stacks above the first."""
+    """Holiday and your-date names at the bottom of the box, at the label size: on the left, or
+    centred. A second name stacks above the first."""
     cfg = settings.labels
     kind_color = {'holiday': settings.holidays.color, 'mine': settings.my_dates.color}
     width = rect.w - cfg.corner_left - cfg.corner_right
+    x = rect.x + rect.w / 2 if cfg.name_align == 'centre' else rect.x + cfg.corner_left
     lines = [(line, kind_color[mark.kind]) for mark in marks if mark.text
              for line in wrap(mark.text, font, cfg.corner_size, width)][:2]
     baseline = rect.y + rect.h - cfg.corner_top
     names = []
     for i, (line, color) in enumerate(reversed(lines)):
-        glyphs = tuple(font.place(line, 'text', cfg.corner_size, rect.x + cfg.corner_left,
-                                  baseline - i * cfg.corner_size * 1.6, 'left'))
+        glyphs = tuple(font.place(line, 'text', cfg.corner_size, x, baseline - i * cfg.corner_size * 1.6,
+                                  cfg.name_align))
         if highlight:
             color = highlight_text_color(highlight, rect, [glyphs], font, 'auto', color)
         names.insert(0, Text(glyphs, color))

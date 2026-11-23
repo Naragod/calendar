@@ -1,14 +1,17 @@
 import datetime as dt
 import math
+from io import BytesIO
 
 import pytest
+from PIL import Image
 
 from yearly_calendar import colors, config
 from yearly_calendar.cli import output_folder, parse_args, variant_name
 from yearly_calendar.dates import days_in_year, year_days
+from yearly_calendar.export import render
 from yearly_calendar.font import CAP, Font
 from yearly_calendar.marks import my_dates, public_holidays
-from yearly_calendar.layout import build_grid, even_staircase, grid_lines, month_border, offset_outline, outline, tight_staircase
+from yearly_calendar.layout import Grid, Rect, build_grid, clear_of_grid, even_staircase, grid_lines, month_border, offset_outline, outline, tight_staircase
 from yearly_calendar.model import day_colors
 from yearly_calendar.scene import build_scene
 from yearly_calendar.svg import to_svg
@@ -263,7 +266,7 @@ def test_auto_text_colour_on_cell_without_labels(font):
 
 @pytest.mark.parametrize('override', ['title.text="{yr}"', 'output.formats="png"', 'grid.columns=0', 'output.dpi=0',
                                       'holidays.country="ZZ"', 'holidays.subdivision="XX"', 'holidays.names=5', 'my_dates.dates=[{date="13-40"}]',
-                                      'my_dates.dates=[{date="07-12",until="tomorrow"}]'])
+                                      'my_dates.dates=[{date="07-12",until="tomorrow"}]', 'logo.height=0', 'logo.gap=-1', 'labels.name_align="right"', 'logo.position="below"'])
 def test_bad_settings_are_reported(override):
     with pytest.raises(config.ConfigError):
         config.load(overrides=[override])
@@ -348,6 +351,8 @@ def test_key_lists_what_is_shown(font):
     s = config.load(overrides=['my_dates.dates=[{date="07-12",text="Mum"}]'])
     key = strings(build_scene(2027, s, font).legend[2].texts)
     assert key == ['23', 'Saturday,Sunday', 'Ontariopublicholiday', 'Yourdates', 'monthend', 'Week1is1–7January']
+    s = config.load(overrides=['my_dates.dates=[{date="07-12",text="Mum"}]', 'my_dates.label="Milestones"'])
+    assert 'Milestones' in strings(build_scene(2027, s, font).legend[2].texts)
 
 
 # --- output folders -------------------------------------------------------------------
@@ -381,3 +386,94 @@ def test_title_clears_the_frame(settings, font, year):
            [(x, y0 + (y1 - y0) * i / 40) for i in range(41) for x in (x0, x1)]
     assert not any(inside(x, y) for x, y in edge)
     assert not any(x0 <= px <= x1 and y0 <= py <= y1 for px, py in frame)
+
+
+# --- logo ----------------------------------------------------------------------------
+
+def logo_file(tmp_path, attrs='', body='<rect width="249" height="44" fill="#ff0000"/>'):
+    """A red logo with the Measure logo's shape, written to a temporary file."""
+    path = tmp_path / 'logo.svg'
+    path.write_text(f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 249 44"{attrs}>{body}</svg>')
+    return str(path)
+
+
+def with_logo(path, *overrides):
+    return config.load(overrides=[f'logo.file="{path}"', *overrides])
+
+
+def test_no_logo_by_default(settings, font):
+    scene = build_scene(2027, settings, font)
+    assert scene.logo is None
+    assert to_svg(scene, font).count('<svg') == 1
+
+
+@pytest.mark.parametrize('year', [2027, 2028])
+def test_logo_sits_beside_the_title(tmp_path, font, year):
+    s = with_logo(logo_file(tmp_path))
+    scene = build_scene(year, s, font)
+    last = scene.title.glyphs[-1]
+    title_right = last.x + font.glyph('bold', last.char).x_max * last.scale
+    rect = scene.logo.rect
+    assert rect.h == s.logo.height and rect.w == pytest.approx(s.logo.height * 249 / 44)
+    assert rect.y == pytest.approx(scene.title.glyphs[0].y - s.title.size)      # top of the digits
+    assert rect.x == pytest.approx(title_right + s.logo.gap)
+
+
+@pytest.mark.parametrize('attrs, body', [('', '<rect width="249" height="44" fill="#ff0000"/>'),
+                                         (' fill="#ff0000"', '<rect width="249" height="44"/>')])   # a fill on <svg>
+def test_logo_is_drawn(tmp_path, font, attrs, body):
+    scene = build_scene(2027, with_logo(logo_file(tmp_path, attrs, body)), font)
+    png = Image.open(BytesIO(render(to_svg(scene, font).encode(), 'png', 72, scene.width, scene.height))).convert('RGB')
+    r = scene.logo.rect
+    assert png.getpixel((round(r.x + r.w / 2), round(r.y + r.h / 2))) == (255, 0, 0)
+    assert png.getpixel((round(r.x + r.w + 10), round(r.y + r.h / 2))) != (255, 0, 0)
+
+
+@pytest.mark.parametrize('name, text, error', [
+    ('missing.svg', None, 'found no file'),
+    ('logo.svg', 'not svg', 'is not an SVG file'),
+    ('logo.svg', '<html/>', 'is not an SVG file'),
+    ('logo.svg', '<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10"/>', 'has no viewBox'),
+])
+def test_bad_logo_file_is_reported(tmp_path, name, text, error):
+    if text is not None:
+        (tmp_path / 'logo.svg').write_text(text)
+    with pytest.raises(config.ConfigError, match=error):
+        with_logo(tmp_path / name)
+
+
+def test_logo_can_stand_above_the_title(tmp_path, font):
+    s = with_logo(logo_file(tmp_path), 'logo.position="above"', 'logo.height=40', 'title.baseline=270')
+    scene = build_scene(2027, s, font)
+    first = scene.title.glyphs[0]
+    rect = scene.logo.rect
+    assert rect.y + rect.h == pytest.approx(first.y - s.title.size - s.logo.gap)
+    left = first.x + font.glyph('bold', first.char).x_min * first.scale
+    assert rect.x + rect.w / 2 == pytest.approx(left + font.width('2027', 'bold', s.title.size) / 2)
+
+
+def test_logo_off_the_page_is_reported(tmp_path, font):
+    with pytest.raises(ValueError, match='runs off the page'):
+        build_scene(2027, with_logo(logo_file(tmp_path), 'logo.position="above"', 'logo.height=200'), font)
+
+
+def test_logo_too_tall_is_reported(tmp_path, font):
+    with pytest.raises(ValueError, match='logo.height'):
+        build_scene(2027, with_logo(logo_file(tmp_path), 'logo.height=40'), font)
+
+
+def test_clear_of_grid():
+    grid = Grid(4, 3, 100, 100, 0, 0, (3, 1, 0))     # rows start at x 300, 100 and 0
+    assert clear_of_grid(Rect(0, 0, 270, 70), grid, 30)
+    assert not clear_of_grid(Rect(0, 0, 271, 70), grid, 30)      # row 0's frame starts at x 270
+    assert clear_of_grid(Rect(0, 0, 70, 170), grid, 30)
+    assert not clear_of_grid(Rect(0, 0, 70, 171), grid, 30)      # row 2's frame starts at y 170
+
+
+def test_names_can_be_centred(font):
+    s = config.load(overrides=['labels.name_align="centre"', 'my_dates.dates=[{date="07-12",text="Family dinner"}]'])
+    cell = next(c for c in build_scene(2027, s, font).cells if any(t.color == s.my_dates.color for t in c.texts))
+    glyphs = next(t for t in cell.texts if t.color == s.my_dates.color).glyphs
+    left = glyphs[0].x + font.glyph('text', glyphs[0].char).x_min * glyphs[0].scale
+    right = glyphs[-1].x + font.glyph('text', glyphs[-1].char).x_max * glyphs[-1].scale
+    assert (left + right) / 2 == pytest.approx(cell.rect.x + cell.rect.w / 2)

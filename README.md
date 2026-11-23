@@ -76,6 +76,7 @@ dates = [
   { date = "07-12", text = "Mum" },                                    # every year
   { date = "2027-08-02", until = "2027-08-09", text = "Japan trip" },  # one trip
 ]
+label = "Your dates"    # their line in the white tiles
 ```
 
 ## Change the look
@@ -108,11 +109,25 @@ color = "#c3f0ff"
 | Line widths | `lines.cell_border`, `lines.frame`, `lines.month_divider` |
 | The dark corner on each month's last day | `[highlight]` |
 | What each corner shows | `labels.centre`, `labels.top_left`, `labels.top_right` |
+| Where holiday and your-date names sit | `labels.name_align`: `"left"` or `"centre"` |
 | How weeks are counted | `labels.week_numbering`: `"blocks"` or `"iso"` |
 | Bold weekends | `weekends.bold` |
 | The white tiles | `overview.show`, `legend.show`, `key.show` |
 | The title | `[title]` |
+| A logo by the title | `[logo]` |
 | Poster size | `page.width`, `page.height`, or `"auto"` to fit the calendar |
+
+### Add a logo
+
+A logo sits beside the year. Its top lines up with the top of the digits. Set `position = "above"` to stand it over the year. Give it an SVG file with a `viewBox`:
+
+```toml
+[logo]
+file = "source/logo.svg"    # from the project folder
+height = 28                 # points. The width keeps the logo's shape
+```
+
+A tall logo runs into the grid. The run stops and says so. On the 60 × 40 in poster, 28 pt fits.
 
 ## Presets
 

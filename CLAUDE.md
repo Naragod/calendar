@@ -6,7 +6,7 @@
 
 - The 2027 and 2028 posters in `output/` are ready to print at 60 × 40 in.
 - Every digit and letter comes from the font Inter.
-- 173 tests pass.
+- 191 tests pass.
 - The code lives at https://github.com/Naragod/calendar.
 
 ## Commands

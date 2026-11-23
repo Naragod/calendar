@@ -10,8 +10,9 @@ from pathlib import Path
 from .colors import SPACES
 from .dates import WEEK_NUMBERINGS
 from .export import FORMATS
+from .logo import POSITIONS, read as read_logo
 from .marks import check_date, region
-from .model import COLOR_UNITS, DIVIDER_STYLES, HIGHLIGHT_RULES, LABELS
+from .model import COLOR_UNITS, DIVIDER_STYLES, HIGHLIGHT_RULES, LABELS, NAME_ALIGNS
 
 ROOT = Path(__file__).resolve().parents[2]
 DEFAULTS = ROOT / 'calendar.toml'
@@ -85,6 +86,7 @@ class Labels:
     corner_top: float
     corner_left: float
     corner_right: float
+    name_align: str
     color: str
 
 
@@ -106,6 +108,7 @@ class Holidays:
 @dataclass(frozen=True)
 class MyDates:
     color: str
+    label: str
     dates: list
 
 
@@ -134,6 +137,14 @@ class Title:
 
 
 @dataclass(frozen=True)
+class Logo:
+    file: str
+    height: float
+    gap: float
+    position: str
+
+
+@dataclass(frozen=True)
 class Settings:
     page: Page
     output: Output
@@ -149,6 +160,7 @@ class Settings:
     overview: Overview
     key: Key
     title: Title
+    logo: Logo
 
 
 def load(layers=(), overrides=()):
@@ -249,6 +261,11 @@ def validate(settings):
         for key in ('date', 'until'):
             if key in entry:
                 _check(check_date, entry[key], f'my_dates.dates {key}')
+    logo = settings.logo
+    if logo.height <= 0 or logo.gap < 0:
+        raise ConfigError('logo.height must be above 0, and logo.gap 0 or more')
+    if logo.file:
+        _check(read_logo, logo.file, 'logo.file')
     h = settings.holidays
     if h.country:
         _check(lambda code: region(code, h.subdivision), h.country, 'holidays')
@@ -264,6 +281,8 @@ def validate(settings):
     choice(settings.colors.space, SPACES, 'colors.space')
     choice(settings.highlight.days, HIGHLIGHT_RULES, 'highlight.days')
     choice(settings.labels.week_numbering, WEEK_NUMBERINGS, 'labels.week_numbering')
+    choice(settings.labels.name_align, NAME_ALIGNS, 'labels.name_align')
+    choice(settings.logo.position, POSITIONS, 'logo.position')
     for slot in ('centre', 'top_left', 'top_right'):
         choice(getattr(settings.labels, slot), LABELS, f'labels.{slot}')
     for fmt in settings.output.formats:
