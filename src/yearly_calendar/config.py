@@ -12,7 +12,7 @@ from .dates import WEEK_NUMBERINGS
 from .export import FORMATS
 from .logo import POSITIONS, read as read_logo
 from .marks import check_date, region
-from .model import COLOR_UNITS, DIVIDER_STYLES, HIGHLIGHT_RULES, LABELS, NAME_ALIGNS
+from .model import COLOR_UNITS, DIVIDER_STYLES, HIGHLIGHT_RULES, LABELS, NAME_ALIGNS, points
 
 ROOT = Path(__file__).resolve().parents[2]
 DEFAULTS = ROOT / 'calendar.toml'
@@ -29,6 +29,7 @@ class Page:
     height: float | str
     margin: float
     background: str
+    fit: bool
 
 
 @dataclass(frozen=True)
@@ -241,14 +242,24 @@ def _check(fn, value, name):
         raise ConfigError(f'{name}: {e}') from None
 
 
+def _length(value):
+    """True for a page length above 0: points, or inches like "36in"."""
+    try:
+        return points(value) > 0
+    except (TypeError, ValueError):
+        return False
+
+
 def validate(settings):
     def choice(value, options, name):
         if value not in options:
             raise ConfigError(f'{name} must be one of {", ".join(options)}; got {value!r}')
     for name in ('width', 'height'):
         value = getattr(settings.page, name)
-        if not (value == 'auto' or isinstance(value, (int, float))):
-            raise ConfigError(f'page.{name} must be a number of points or "auto"')
+        if not (value == 'auto' or _length(value)):
+            raise ConfigError(f'page.{name} must be a number of points, inches like "36in", or "auto"')
+        if settings.page.fit and value == 'auto':
+            raise ConfigError(f'page.fit fills a page of set size. Give page.{name} a size, like "36in"')
     if settings.page.margin < 0:
         raise ConfigError('page.margin takes 0 or more points')
     if settings.grid.columns < 1 or settings.grid.cell_width <= 0 or settings.grid.cell_height <= 0:

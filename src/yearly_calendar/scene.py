@@ -6,7 +6,7 @@ from .dates import year_days
 from .layout import build_grid, grid_lines, offset_outline, outline
 from .legend import TILE_CELLS, legend_tiles, make_legend
 from .logo import by_title
-from .model import Scene, day_colors, day_marks, make_cell, make_title, month_dividers, page_size
+from .model import Scene, day_colors, day_marks, fit_grid, make_cell, make_title, month_dividers, page_size
 
 
 def build_scene(year, settings, font):
@@ -14,7 +14,8 @@ def build_scene(year, settings, font):
     g = settings.grid
     tiles = legend_tiles(settings)
     grid = build_grid(len(days), g.columns, g.cell_width, g.cell_height, g.staircase, (TILE_CELLS,) * len(tiles))
-    width, height = page_size(grid, settings.page, settings.lines.frame)
+    grid, scale = fit_grid(grid, settings.page, settings.lines.frame) if settings.page.fit else (grid, 1.0)
+    width, height = page_size(grid, settings.page, settings.lines.frame, scale)
     grid = replace(grid, x=(width - grid.width) / 2, y=(height - grid.height) / 2)
     slots = grid.slots()[grid.spare:]
     fills = [colors.to_hex(c) for c in day_colors(days, settings.colors)]
@@ -31,4 +32,4 @@ def build_scene(year, settings, font):
         dividers=tuple(month_dividers(days, slots, grid, lines.month_divider_style == 'fade')),
         frame_outer=tuple(offset_outline(inner, lines.frame)), frame_inner=tuple(inner),
         patches=outlines, title=make_title(year, grid, settings.title, font),
-        logo=by_title(year, grid, settings, font))
+        logo=by_title(year, grid, settings, font), scale=scale)

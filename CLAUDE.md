@@ -6,7 +6,7 @@
 
 - The 2027 and 2028 posters in `output/` are ready to print at 60 × 40 in.
 - Every digit and letter comes from the font Inter.
-- 191 tests pass.
+- 218 tests pass.
 - The code lives at https://github.com/Naragod/calendar.
 
 ## Commands
@@ -40,7 +40,7 @@ Settings → a scene of plain data → SVG → PNG and PDF. Nothing draws until 
 cmp output/2027/2027_Yearly_Calendar.svg /tmp/check/2027_Yearly_Calendar.svg
 ```
 
-**New look:** render a 100 dpi PNG with `--out`. Find each changed box in `build_scene(...).cells`, and multiply its points by dpi / 72. Crop it with PIL from the venv. Look at the crop before you show Mateo.
+**New look:** render a 100 dpi PNG with `--out`. Find each changed box in `build_scene(...).cells`, and multiply its points by dpi / 72 × `scene.scale`. The scale is 1 unless `--size` or `page.fit` is on. Crop it with PIL from the venv. Look at the crop before you show Mateo.
 
 **Then:**
 

@@ -41,6 +41,7 @@ output/
 | Change one setting | `.venv/bin/yearly_calendar 2027 --set grid.cell_width=180` |
 | Use your own settings file | `.venv/bin/yearly_calendar 2027 --config my_settings.toml` |
 | Save to another folder | `.venv/bin/yearly_calendar 2027 --out ~/Downloads` |
+| Print at another size | `.venv/bin/yearly_calendar 2027 --size 24x36` |
 
 Leap years work too. In 2028 the grid grows to 366 boxes.
 
@@ -115,7 +116,7 @@ color = "#c3f0ff"
 | The white tiles | `overview.show`, `legend.show`, `key.show` |
 | The title | `[title]` |
 | A logo by the title | `[logo]` |
-| Poster size | `page.width`, `page.height`, or `"auto"` to fit the calendar |
+| Poster size | `--size 24x36`, or `page.width`, `page.height` and `page.fit` |
 
 ### Add a logo
 
@@ -128,6 +129,25 @@ height = 28                 # points. The width keeps the logo's shape
 ```
 
 A tall logo runs into the grid. The run stops and says so. On the 60 × 40 in poster, 28 pt fits.
+
+### Print at any size
+
+`--size` takes the poster size in inches. The long side runs across, so `24x36` and `36x24` give the same poster:
+
+```sh
+.venv/bin/yearly_calendar 2027 --size 36x48
+```
+
+The boxes stretch to the page's shape. Then the whole poster shrinks or grows to fill the page, text and lines too. Each size gets its own folder, like `output/2027/variants/36x48/`.
+
+The same works in a settings file:
+
+```toml
+[page]
+width = "48in"
+height = "36in"
+fit = true
+```
 
 ## Presets
 

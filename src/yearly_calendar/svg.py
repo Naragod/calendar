@@ -25,8 +25,9 @@ def to_svg(scene, font):
         *([_logo(scene.logo)] if scene.logo else []),
     ]
     w, h = _num(scene.width), _num(scene.height)
+    pw, ph = _num(scene.width * scene.scale), _num(scene.height * scene.scale)      # the printed size
     return (f'<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" '
-            f'width="{w}pt" height="{h}pt" viewBox="0 0 {w} {h}">\n'
+            f'width="{pw}pt" height="{ph}pt" viewBox="0 0 {w} {h}">\n'
             f'<defs>\n' + '\n'.join(defs) + '\n</defs>\n' + '\n'.join(body) + '\n</svg>\n')
 
 

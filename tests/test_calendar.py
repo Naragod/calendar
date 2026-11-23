@@ -6,7 +6,7 @@ import pytest
 from PIL import Image
 
 from yearly_calendar import colors, config
-from yearly_calendar.cli import output_folder, parse_args, variant_name
+from yearly_calendar.cli import output_folder, overrides_from, parse_args, variant_name
 from yearly_calendar.dates import days_in_year, year_days
 from yearly_calendar.export import render
 from yearly_calendar.font import CAP, Font
@@ -266,7 +266,7 @@ def test_auto_text_colour_on_cell_without_labels(font):
 
 @pytest.mark.parametrize('override', ['title.text="{yr}"', 'output.formats="png"', 'grid.columns=0', 'output.dpi=0',
                                       'holidays.country="ZZ"', 'holidays.subdivision="XX"', 'holidays.names=5', 'my_dates.dates=[{date="13-40"}]',
-                                      'my_dates.dates=[{date="07-12",until="tomorrow"}]', 'logo.height=0', 'logo.gap=-1', 'labels.name_align="right"', 'logo.position="below"'])
+                                      'my_dates.dates=[{date="07-12",until="tomorrow"}]', 'logo.height=0', 'logo.gap=-1', 'labels.name_align="right"', 'logo.position="below"', 'page.width="36cm"', 'page.height="0in"', 'page.width=-5', 'page.height="in"'])
 def test_bad_settings_are_reported(override):
     with pytest.raises(config.ConfigError):
         config.load(overrides=[override])
@@ -364,15 +364,23 @@ def test_key_lists_what_is_shown(font):
     (['2027', '--preset', 'by_month', '--config', 'mine/my_settings.toml', '--set', 'grid.columns=20'],
      'output/2027/variants/by_month+my_settings+custom'),
     (['2027', '--set', 'weekends.shade=0', '--preview'], 'output/2027/variants/custom/previews'),
+    (['2027', '--preset', 'by_month', '--size', '36x24'], 'output/2027/variants/by_month+24x36'),
 ])
 def test_output_folder(argv, folder):
     args = parse_args(argv)
     assert output_folder('output', args.years[0], variant_name(args), args.preview).as_posix() == folder
 
 
+def sized(size):
+    """Settings for a poster size in inches, as --size gives them."""
+    return config.load(overrides=overrides_from(parse_args(['2027', '--size', size])))
+
+
 @pytest.mark.parametrize('year', [2027, 2028])
-def test_title_clears_the_frame(settings, font, year):
+@pytest.mark.parametrize('size', [None, '12x18', '36x48'])
+def test_title_clears_the_frame(settings, font, year, size):
     """The title keeps at least one cell-border width (9 pt) clear of the frame."""
+    settings = sized(size) if size else settings
     scene = build_scene(year, settings, font)
     frame, gap = scene.frame_outer, settings.lines.cell_border
     glyphs = scene.title.glyphs
@@ -477,3 +485,45 @@ def test_names_can_be_centred(font):
     left = glyphs[0].x + font.glyph('text', glyphs[0].char).x_min * glyphs[0].scale
     right = glyphs[-1].x + font.glyph('text', glyphs[-1].char).x_max * glyphs[-1].scale
     assert (left + right) / 2 == pytest.approx(cell.rect.x + cell.rect.w / 2)
+
+
+# --- poster size ---------------------------------------------------------------------
+
+@pytest.mark.parametrize('text, sides', [('24x36', (36, 24)), ('36X24', (36, 24)), ('36x48', (48, 36))])
+def test_poster_size_puts_the_long_side_across(text, sides):
+    assert parse_args(['2027', '--size', text]).size == sides
+
+
+@pytest.mark.parametrize('text', ['24', '24x', 'x36', '24x36x48', '0x36', 'axb'])
+def test_bad_poster_size_is_reported(text):
+    with pytest.raises(SystemExit):
+        parse_args(['2027', '--size', text])
+
+
+@pytest.mark.parametrize('year', [2027, 2028])
+@pytest.mark.parametrize('size, inches', [('12x18', (18, 12)), ('36x48', (48, 36)), ('36x40', (40, 36))])
+def test_poster_fills_the_page(font, year, size, inches):
+    s = sized(size)
+    scene = build_scene(year, s, font)
+    assert (scene.width * scene.scale, scene.height * scene.scale) == pytest.approx((inches[0] * 72, inches[1] * 72))
+    xs, ys = [x for x, _ in scene.frame_outer], [y for _, y in scene.frame_outer]
+    assert min(xs) == pytest.approx(s.page.margin) and max(xs) == pytest.approx(scene.width - s.page.margin)
+    assert min(ys) == pytest.approx(s.page.margin) and max(ys) == pytest.approx(scene.height - s.page.margin)
+
+
+def test_poster_prints_at_its_size(font):
+    scene = build_scene(2027, sized('24x36'), font)
+    png = Image.open(BytesIO(render(to_svg(scene, font).encode(), 'png', 10, scene.width * scene.scale,
+                                    scene.height * scene.scale)))
+    assert png.size == (360, 240)
+    assert 'width="2592pt" height="1728pt"' in to_svg(scene, font)
+
+
+def test_page_size_takes_inches(font):
+    scene = build_scene(2027, config.load(overrides=['page.width="60in"', 'page.height="40in"']), font)
+    assert (scene.width, scene.height, scene.scale) == (4320, 2880, 1)
+
+
+def test_fit_needs_a_page_size():
+    with pytest.raises(config.ConfigError, match='page.fit'):
+        config.load(overrides=['page.fit=true', 'page.width="auto"'])

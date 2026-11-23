@@ -77,6 +77,7 @@ class Scene:
     patches: tuple[Patch, ...]           # the key sample's outline
     title: Text | None
     logo: Logo | None = None
+    scale: float = 1.0                  # printed size / drawing size; see model.fit_grid
 
 
 class Label(NamedTuple):
@@ -87,11 +88,29 @@ class Label(NamedTuple):
     align: str
 
 
-def page_size(grid, page, frame):
+def points(length):
+    """A page length in points: a number of points, or inches like "36in". ValueError otherwise."""
+    if isinstance(length, str) and not length.endswith('in'):
+        raise ValueError(f'{length!r} is not a length')
+    return float(length[:-2]) * 72 if isinstance(length, str) else float(length)
+
+
+def fit_grid(grid, page, frame):
+    """Stretch the boxes to the page's shape, and the scale that takes the drawing to the page.
+    The text and lines keep their size next to the boxes; the whole drawing shrinks or grows."""
+    edge = 2 * (page.margin + frame)
+    width, height = points(page.width), points(page.height)
+    scale = min(width / (grid.width + edge), height / (grid.height + edge))
+    return replace(grid, cell_w=(width / scale - edge) / grid.columns,
+                   cell_h=(height / scale - edge) / grid.rows), scale
+
+
+def page_size(grid, page, frame, scale=1.0):
+    """The page in drawing points: the printed size divided by the scale."""
     block_w, block_h = grid.width + 2 * frame, grid.height + 2 * frame
-    width = block_w + 2 * page.margin if page.width == 'auto' else float(page.width)
-    height = block_h + 2 * page.margin if page.height == 'auto' else float(page.height)
-    if block_w > width or block_h > height:
+    width = block_w + 2 * page.margin if page.width == 'auto' else points(page.width) / scale
+    height = block_h + 2 * page.margin if page.height == 'auto' else points(page.height) / scale
+    if block_w > width + 1e-6 or block_h > height + 1e-6:        # 1e-6: rounding left by fit_grid
         raise ValueError(f'the calendar ({block_w:.0f} x {block_h:.0f} pt) is larger than the page '
                          f'({width:.0f} x {height:.0f} pt). Make the cells smaller, or set the page size to "auto"')
     return width, height

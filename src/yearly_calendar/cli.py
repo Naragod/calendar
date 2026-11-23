@@ -1,4 +1,4 @@
-"""Command line: yearly_calendar 2027 [2028 ...] [--preset NAME] [--config FILE] [--set KEY=VALUE]
+"""Command line: yearly_calendar 2027 [2028 ...] [--preset NAME] [--config FILE] [--set KEY=VALUE] [--size AxB]
 
 Files go to output/YEAR/. Runs that change the look go to output/YEAR/variants/NAME/, and
 --preview runs to a previews/ folder inside either, so they never replace the print files.
@@ -28,13 +28,28 @@ def parse_args(argv):
     p.add_argument('--preview', action='store_true', help=f'make a quick {PREVIEW_DPI} dpi PNG in a previews/ folder')
     p.add_argument('--formats', help='the files to make, like png,pdf,svg')
     p.add_argument('--dpi', type=float, help='dots per inch in the PNG')
+    p.add_argument('--size', type=poster_size, metavar='AxB',
+                   help='fit the poster to a page in inches, like 24x36. The long side runs across')
     p.add_argument('--out', help='save the files in this folder, in place of output/YEAR/')
     return p.parse_args(argv)
+
+
+def poster_size(text):
+    """'24x36' -> (36, 24): width and height in inches, the long side across."""
+    try:
+        sides = sorted((float(side) for side in text.lower().split('x')), reverse=True)
+    except ValueError:
+        sides = []
+    if len(sides) != 2 or sides[1] <= 0:
+        raise argparse.ArgumentTypeError(f'give the size in inches as two numbers, like 24x36; got {text!r}')
+    return tuple(sides)
 
 
 def overrides_from(args):
     """--set items, then the --preview / --formats / --dpi shortcuts as the same 'key=value' form."""
     overrides = list(args.overrides)
+    if args.size:
+        overrides += [f'page.width="{args.size[0]:g}in"', f'page.height="{args.size[1]:g}in"', 'page.fit=true']
     formats = args.formats or ('png' if args.preview else None)
     dpi = args.dpi if args.dpi is not None else (PREVIEW_DPI if args.preview else None)
     if formats:
@@ -45,9 +60,10 @@ def overrides_from(args):
 
 
 def variant_name(args):
-    """Folder name for a run that changes the default look: presets, settings files, then 'custom'
-    for --set. Empty for the default look."""
-    return '+'.join(args.preset + [Path(c).stem for c in args.config] + (['custom'] if args.overrides else []))
+    """Folder name for a run that changes the default look: presets, settings files, the --size,
+    then 'custom' for --set. Empty for the default look."""
+    size = [f'{args.size[1]:g}x{args.size[0]:g}'] if args.size else []
+    return '+'.join(args.preset + [Path(c).stem for c in args.config] + size + (['custom'] if args.overrides else []))
 
 
 def output_folder(root, year, variant='', preview=False):
@@ -65,7 +81,7 @@ def render_year(year, settings, font, folder):
         sys.exit(f'{year}: {e}')
     out = settings.output
     paths = export.write(to_svg(scene, font), folder, out.name.format(year=year),
-                         out.formats, out.dpi, scene.width, scene.height)
+                         out.formats, out.dpi, scene.width * scene.scale, scene.height * scene.scale)
     print(f'{year}: ' + ', '.join(str(p) for p in paths) + f'  ({time.time() - start:.1f}s)')
 
 

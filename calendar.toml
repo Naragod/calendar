@@ -7,10 +7,12 @@
 #   yearly_calendar 2027 --set grid.cell_width=180
 
 [page]
-width = 4320            # 60 in. Or "auto" to fit the calendar plus the margin
+width = 4320            # 60 in. Points, inches like "36in", or "auto" to fit the calendar plus the margin
 height = 2880           # 40 in
-margin = 48             # white space around the frame when the size is "auto"
+margin = 48             # white space around the frame when the size is "auto", or with fit (it scales too)
 background = "#ffffff"
+fit = false             # true: stretch the boxes to the page's shape, then shrink or grow the whole
+                        # poster to fill the page. --size 24x36 turns it on
 
 [output]
 directory = "output"            # inside the project folder
