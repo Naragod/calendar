@@ -24,7 +24,7 @@ Calendars have printed feast days in red since at least 1490. That is where "red
 
 The red is `#b32322`. It reads as red, not as a thick black line. It keeps a contrast of 3:1 or more against the black lines and on every box colour. That is the bar for large text ([W3C](https://www.w3.org/WAI/WCAG22/Understanding/contrast-minimum.html)).
 
-The name sits in the bottom-left corner. It is the same size as the other labels. Each Ontario holiday name fits on one line.
+The name sits at the bottom, centred. It is the same size as the other labels. Each Ontario holiday name fits on one line.
 
 ## White tiles: how to read the poster
 

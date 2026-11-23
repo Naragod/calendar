@@ -83,7 +83,7 @@ corner_size = 15.7              # height of the corner labels
 corner_top = 13.5               # gap from the box edge to the labels.
 corner_left = 13.5              # 13.5 leaves 9 pt clear of the border
 corner_right = 13.5
-name_align = "left"             # holiday and your-date names: "left" or "centre"
+name_align = "centre"           # holiday and your-date names: "centre" or "left"
 color = "#000000"
 
 [weekends]

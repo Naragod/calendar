@@ -66,7 +66,7 @@ Every choice serves the 60 × 40 in print, seen on a wall from 0.5 to 2 m away.
 Keep:
 
 - bold weekend numbers
-- red-letter holidays: a red number, with the name at the bottom left
+- red-letter holidays: a red number, with the name centred at the bottom
 - white tiles inside the grid
 - the title at its first size
 

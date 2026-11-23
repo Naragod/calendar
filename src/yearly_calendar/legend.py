@@ -57,8 +57,9 @@ def anatomy_tile(rect, ctx):
         words[1:] = [LABELS[kind][1] for kind in kinds[1:]]          # narrow tile: drop the notes
     texts = place_labels(slot_labels(rect, cfg, words, cfg.corner_size), 'text', rect, None, settings, font)
     if ctx.holiday_labels:
-        texts += (Text(tuple(font.place('holiday name', 'text', cfg.corner_size, rect.x + cfg.corner_left,
-                                        rect.y + rect.h - cfg.corner_top, 'left')), settings.holidays.color),)
+        x = rect.x + rect.w / 2 if cfg.name_align == 'centre' else rect.x + cfg.corner_left      # as in mark_names
+        texts += (Text(tuple(font.place('holiday name', 'text', cfg.corner_size, x,
+                                        rect.y + rect.h - cfg.corner_top, cfg.name_align)), settings.holidays.color),)
     return texts, (), ()
 
 

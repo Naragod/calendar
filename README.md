@@ -47,7 +47,7 @@ Leap years work too. In 2028 the grid grows to 366 boxes.
 
 ## Holidays and your own dates
 
-Public holidays print in red. The day number turns red. The name sits in the bottom-left corner. The poster shows Ontario's holidays by default. For England's, use the preset:
+Public holidays print in red. The day number turns red. The name sits at the bottom, centred. The poster shows Ontario's holidays by default. For England's, use the preset:
 
 ```sh
 .venv/bin/yearly_calendar 2027 --preset england

@@ -334,7 +334,10 @@ def test_holidays_are_red_letter_days(font):
     assert christmas.texts[0].color == s.holidays.color                    # the day-of-year number
     names = [(''.join(g.char for g in t.glyphs), t.color) for t in christmas.texts[-2:]]
     assert names == [('ChristmasDay', s.holidays.color), ('Familydinner', s.my_dates.color)]
-    assert christmas.texts[-1].glyphs[0].x == pytest.approx(christmas.rect.x + s.labels.corner_left, abs=2)
+    glyphs = christmas.texts[-1].glyphs                                  # names sit centred at the bottom
+    left = glyphs[0].x + font.glyph('text', glyphs[0].char).x_min * glyphs[0].scale
+    right = glyphs[-1].x + font.glyph('text', glyphs[-1].char).x_max * glyphs[-1].scale
+    assert (left + right) / 2 == pytest.approx(christmas.rect.x + christmas.rect.w / 2)
 
 
 @pytest.mark.parametrize('year', range(2026, 2031))
@@ -478,13 +481,11 @@ def test_clear_of_grid():
     assert not clear_of_grid(Rect(0, 0, 70, 171), grid, 30)      # row 2's frame starts at y 170
 
 
-def test_names_can_be_centred(font):
-    s = config.load(overrides=['labels.name_align="centre"', 'my_dates.dates=[{date="07-12",text="Family dinner"}]'])
+def test_names_can_sit_on_the_left(font):
+    s = config.load(overrides=['labels.name_align="left"', 'my_dates.dates=[{date="07-12",text="Family dinner"}]'])
     cell = next(c for c in build_scene(2027, s, font).cells if any(t.color == s.my_dates.color for t in c.texts))
     glyphs = next(t for t in cell.texts if t.color == s.my_dates.color).glyphs
-    left = glyphs[0].x + font.glyph('text', glyphs[0].char).x_min * glyphs[0].scale
-    right = glyphs[-1].x + font.glyph('text', glyphs[-1].char).x_max * glyphs[-1].scale
-    assert (left + right) / 2 == pytest.approx(cell.rect.x + cell.rect.w / 2)
+    assert glyphs[0].x == pytest.approx(cell.rect.x + s.labels.corner_left, abs=2)
 
 
 # --- poster size ---------------------------------------------------------------------
